@@ -4,7 +4,7 @@ services:
     image: registry:2
     restart: always
     ports:
-    - "5000:5000"
+    - 5000:5000
     environment:
       REGISTRY_AUTH: htpasswd
       REGISTRY_AUTH_HTPASSWD_REALM: Registry-Realm
@@ -13,42 +13,49 @@ services:
     volumes:
       - registrydata:/data
       - ./auth:/auth
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro      
     networks:
       - mynet
 #Nginx Service
-  nginx:
+  www.wvoelkl.com:
     image: nginx:alpine
-    container_name: nginx
+    container_name: www.wvoelkl.com
     restart: unless-stopped
     env_file:
       - ./common.env
     environment:
       - ENV=development
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80
+      - 443:443
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./nginx/ssl/:/etc/nginx/ssl/
       - ./nginx/log:/var/log/nginx/
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro        
+      - ./web/site:/var/www/html/:ro
     networks:
       - mynet
       - secureNet
-       #    entrypoint: ["sh", "-c", "sleep 2073600"]
-  web:
-    image: bitnami/apache:latest
-    container_name: site
-    restart: unless-stopped
-    volumes: 
-      - ./web/site:/app
-      - ./web/conf:/vhosts/my_vhost.conf:ro
-    environment:
-      - APACHE_HTTP_PORT_NUMBER=8081
-    ports:
-      - 8081:8081
-    networks:
-      - mynet
-  login:
+     #    entrypoint: ["sh", "-c", "sleep 2073600"]
+       #  www.wvoelkl.com:
+       #    image: bitnami/apache:latest
+       #    container_name: site
+       #    restart: unless-stopped
+       #    volumes: 
+       #      - ./web/site:/app
+       #      - ./web/conf:/vhosts/my_vhost.conf:ro
+       #      - /etc/timezone:/etc/timezone:ro
+       #      - /etc/localtime:/etc/localtime:ro
+       #    environment:
+       #      - APACHE_HTTP_PORT_NUMBER=8081
+       #    ports:
+       #      - 8081:8081
+       #    networks:
+       #      - mynet
+  login.wvoelkl.com:
     image: voucher/vouch-proxy
     restart: unless-stopped
     ports:
@@ -56,6 +63,8 @@ services:
     volumes:
       - ./login/config:/config:ro
       - ./login/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro      
     networks:
       - secureNet
 networks:
