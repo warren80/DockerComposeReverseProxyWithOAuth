@@ -1,4 +1,4 @@
-# DockerComposeReverseProxyWithOAuth
+# DockerCompose ReverseProxy With oAuth and Vouch
 
 This is is the basis for my cluster of websites.  Hopefully I will be adding more modules in the future.
 
