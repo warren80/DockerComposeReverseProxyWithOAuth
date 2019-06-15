@@ -20,12 +20,10 @@ services:
     image: nginx:alpine
     container_name: nginx
     restart: unless-stopped
-#    tty: true
     env_file:
       - ./common.env
     environment:
       - ENV=development
-#      - APPLICATION_URL=http://localhost
     ports:
       - "80:80"
       - "443:443"
@@ -35,7 +33,8 @@ services:
       - ./nginx/log:/var/log/nginx/
     networks:
       - mynet
-        #    entrypoint: ["sh", "-c", "sleep 2073600"]
+      - secureNet
+       #    entrypoint: ["sh", "-c", "sleep 2073600"]
   web:
     image: bitnami/apache:latest
     container_name: site
@@ -49,8 +48,20 @@ services:
       - 8081:8081
     networks:
       - mynet
+  login:
+    image: voucher/vouch-proxy
+    restart: unless-stopped
+    ports:
+      - 9090:9090
+    volumes:
+      - ./login/config:/config:ro
+      - ./login/data:/data
+    networks:
+      - secureNet
 networks:
   mynet:
+    driver: bridge
+  secureNet:
     driver: bridge
 #Volumes
 volumes:
