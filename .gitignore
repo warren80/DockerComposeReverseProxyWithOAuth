@@ -1,0 +1,5 @@
+web/site
+auth/registry.passwd
+auth/*passwd
+nginx/ssl/*.pem
+nginx/log/*

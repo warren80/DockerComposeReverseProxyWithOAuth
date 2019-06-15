@@ -1,0 +1,58 @@
+version: '3'
+services:
+  registry:
+    image: registry:2
+    restart: always
+    ports:
+    - "5000:5000"
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry-Realm
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/registry.passwd
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+    volumes:
+      - registrydata:/data
+      - ./auth:/auth
+    networks:
+      - mynet
+#Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+#    tty: true
+    env_file:
+      - ./common.env
+    environment:
+      - ENV=development
+#      - APPLICATION_URL=http://localhost
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./nginx/ssl/:/etc/nginx/ssl/
+      - ./nginx/log:/var/log/nginx/
+    networks:
+      - mynet
+        #    entrypoint: ["sh", "-c", "sleep 2073600"]
+  web:
+    image: bitnami/apache:latest
+    container_name: site
+    restart: unless-stopped
+    volumes: 
+      - ./web/site:/app
+      - ./web/conf:/vhosts/my_vhost.conf:ro
+    environment:
+      - APACHE_HTTP_PORT_NUMBER=8081
+    ports:
+      - 8081:8081
+    networks:
+      - mynet
+networks:
+  mynet:
+    driver: bridge
+#Volumes
+volumes:
+  registrydata:
+    driver: local
