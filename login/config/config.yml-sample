@@ -1,0 +1,30 @@
+# vouch config
+# Feel free to remove the extra headers.  and turn off testing this is purly a sample that worked on my system.
+# Controlling users with White list.  Might want to swith to octa or implment some ldap
+vouch:
+  testing: true
+  domains:
+  - wvoelkl.com
+#  whiteList:
+  allowAllUsers: false
+  cookie:
+    name: VouchCookie
+    secure: true
+    httpOnly: true
+  session:
+    name: VouchSession
+  headers:
+    jwt: X-Vouch-Token
+    querystring: access_token
+    redirect: X-Vouch-Requested-URI
+  accesstoken: X-Vouch-IdP-AccessToken
+  idtoken: -X-Vouch-IdP-IdToken
+oauth:
+  provider: google
+  # get credentials from...
+  # https://console.developers.google.com/apis/credentials
+  client_id: - get your own
+  client_secret: 
+  callback_urls: 
+    - https://login.wvoelkl.com/auth
+  # endpoints set from https://godoc.org/golang.org/x/oauth2/google
