@@ -1,6 +1,6 @@
-version: '3'
+version: '3.4'
 services:
-  registry:
+  registry.wvoelkl.com:
     image: registry:2
     restart: always
     ports:
@@ -11,19 +11,17 @@ services:
       REGISTRY_AUTH_HTPASSWD_PATH: /auth/registry.passwd
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
     volumes:
-      - registrydata:/data
-      - ./auth:/auth
+      - /opt/data/registry/:/data
+      - /opt/data/auth/registry.passwd:/auth/registry.passwd:ro
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro      
     networks:
-      - mynet
+      - authenticatedNet
 #Nginx Service
   www.wvoelkl.com:
     image: nginx:alpine
     container_name: www.wvoelkl.com
     restart: unless-stopped
-    env_file:
-      - ./common.env
     environment:
       - ENV=development
     ports:
@@ -35,44 +33,50 @@ services:
       - ./nginx/log:/var/log/nginx/
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro        
-      - ./web/site:/var/www/html/:ro
+        #      - ./web/site:/var/www/html/:ro
     networks:
-      - mynet
+      - authenticatedNet
       - secureNet
-     #    entrypoint: ["sh", "-c", "sleep 2073600"]
-       #  www.wvoelkl.com:
-       #    image: bitnami/apache:latest
-       #    container_name: site
-       #    restart: unless-stopped
-       #    volumes: 
-       #      - ./web/site:/app
-       #      - ./web/conf:/vhosts/my_vhost.conf:ro
-       #      - /etc/timezone:/etc/timezone:ro
-       #      - /etc/localtime:/etc/localtime:ro
-       #    environment:
-       #      - APACHE_HTTP_PORT_NUMBER=8081
-       #    ports:
-       #      - 8081:8081
-       #    networks:
-       #      - mynet
+#    entrypoint: ["sh", "-c", "sleep 2073600"]
+  web.wvoelkl.com:
+    image: bitnami/apache:latest
+    container_name: site
+    restart: unless-stopped
+    volumes: 
+      - /opt/data/site:/app
+      - ./web/conf:/vhosts/my_vhost.conf:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - APACHE_HTTP_PORT_NUMBER=8081
+#    ports:
+#     - 8081:8081
+    networks:
+     - authenticatedNet
   login.wvoelkl.com:
     image: voucher/vouch-proxy
     restart: unless-stopped
-    ports:
-      - 9090:9090
+#    ports:
+#      - 9090:9090
     volumes:
-      - ./login/config:/config:ro
-      - ./login/data:/data
+      - /opt/data/vouch/config.yml:/config/config.yml:ro
+      - /opt/data/vouch/db:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro      
     networks:
       - secureNet
+  mongo:
+    image: bitnami/mongodb:latest
+    ports:
+      27017:27017
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /opt/data/mongodb:/data/db
+    networks:
+      - authenticatedNet
 networks:
-  mynet:
+  authenticatedNet:
     driver: bridge
   secureNet:
     driver: bridge
-#Volumes
-volumes:
-  registrydata:
-    driver: local
